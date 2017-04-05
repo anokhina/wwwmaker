@@ -1,0 +1,8 @@
+{ 
+resdir: "C:/temp/pagetemplates",
+css: "css.css", 
+logo: "logo.png", 
+favico: "favico.ico",
+force: true,
+dir: "C:/temp/www"
+}

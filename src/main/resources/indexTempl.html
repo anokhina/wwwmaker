@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta charset="utf-8">
+
+		<meta name="format-detection" content="telephone=no">
+
+		<link rel="stylesheet" href="$!{cssName}">
+
+		<link rel="icon" href="$!{favicon}">
+
+		<title>$!{title}</title>
+<script>
+function toggleClass(elId, elCls, extraCls) {
+    var x = document.getElementById(elId);
+    if (x.className === elCls) {
+        x.className += (" " +extraCls);
+    } else {
+        x.className = elCls;
+    }
+}
+</script>
+	</head>
+OHO
+	<body>
+	<div class="wrapper">
+		<div class="header">
+#if($navLogo)
+					<a href="$!{navLogoHref}" class="navLogo"><img src="$!{navLogo}"/></a>
+#else
+					<a href="$!{navLogoHref}" class="navLogoTxt">&#127968;</a>
+#end
+
+		<div class="nav" id="nav">
+			<div class="row">
+
+$navcolumns
+				<div class="column menuicon"><a href="javascript:void(0);" onclick="toggleClass('nav','nav','showMenu')">&#9776;</a></div>
+				<div class="column"></div>
+			</div>
+		</div>
+		<div class="subnav" id="subnav">
+			<div class="row">
+$!{subnavcolumns}
+				<div class="column menuicon"><a href="javascript:void(0);" onclick="toggleClass('subnav','subnav','showMenu')">&#9776;</a></div>
+<div class="column"></div>
+			</div>
+		</div>
+		</div>
+		<div class="content">$pageContent
+#*
+		<main>$pageContent
+		</main>
+*#
+		</div>
+<footer class="footer">
+  <table width="100%">
+  <tr><td><span>&copy; <a href="">SeVN</a>, All&nbsp;Rights&nbsp;Reserved. </span></td>
+      <td class="right">Icons made by <a href="http://www.flaticon.com/authors/madebyoliver" title="Madebyoliver">Madebyoliver</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC&nbsp;3.0&nbsp;BY</a></td></tr>
+  </table>
+</footer>
+	</div>
+	</body>
+</html>
