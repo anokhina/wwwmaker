@@ -35,6 +35,8 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
+import ru.org.sevn.rss.Rss;
+import ru.org.sevn.rss.RssChanel;
 import ru.org.sevn.util.ComplexFilenameFilter;
 import ru.org.sevn.util.DirNotHiddenFilenameFilter;
 import ru.org.sevn.util.FileNameComparator;
@@ -58,12 +60,17 @@ public class WWWGenerator {
 	private FileNameComparator DSC = new FileNameComparator(false);
 	private DirNotHiddenFilenameFilter dirFileFilter = new DirNotHiddenFilenameFilter();
 	
+	private Rss rss;
+	
 	public WWWGenerator(File cssFile, File logoFile, File ficon, VelocityEngine ve) {
 		this.ve = ve;
 		ve.init();
 		this.cssFile = cssFile;
 		this.logoFile = logoFile;
 		this.faviconFile = ficon;
+		rss = new Rss();
+		RssChanel chanel = new RssChanel();
+		rss.addChanel(chanel);
 	}
 	
 	public Comparator<File> getFileComparator(String order) {
@@ -256,19 +263,22 @@ public class WWWGenerator {
 		}
 		File thumbimg = new File(thumbdir, img.getName()+".png");
 		try {
-			String imgComment = UtilHtml.getHtmlBodyContent(ImageUtil.getImageUserCommentString(img, "UTF-8"));
+			String imgComment = UtilHtml.getCleanHtmlBodyContent(ImageUtil.getImageUserCommentString(img, "UTF-8"));
 			context.put("imgComment", imgComment);
 		} catch (UnsupportedEncodingException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		ImageIcon ii = new ImageIcon(img.getPath());
-		ii = ImageUtil.getScaledImageIconHeight(ii, 160, false);
-		try {
-			ImageIO.write(ImageUtil.getBufferedImage(ii), "png", thumbimg);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (!thumbimg.exists()) {
+			System.err.println("generate thumb>>>"+thumbimg);
+			ImageIcon ii = new ImageIcon(img.getPath());
+			ii = ImageUtil.getScaledImageIconHeight(ii, 160, false);
+			try {
+				ImageIO.write(ImageUtil.getBufferedImage(ii), "png", thumbimg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		context.put("hrefthumb", FileUtil.getRelativePath(root, thumbimg)); 
@@ -485,6 +495,7 @@ public class WWWGenerator {
 	}
 	public static int getTextInt(File f, int defVal) {
 		String s = getText(f);
+		//System.err.println("getTextInt>"+defVal+":"+s+":"+f);
 		if (s != null) {
 			try {
 				int ret = Integer.parseInt(s);

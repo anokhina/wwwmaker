@@ -17,8 +17,13 @@ package ru.org.sevn.utilhtml;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.safety.Whitelist;
 
 public class UtilHtml {
+	public static String getCleanHtmlBodyContent(String html) {
+		if (html == null) return null;
+		return getHtmlBodyContent(Jsoup.clean(html, Whitelist.basic()));
+	}
 	public static String getHtmlBodyContent(String html) {
 		if (html == null) return null;
 		
