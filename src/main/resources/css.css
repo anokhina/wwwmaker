@@ -1,6 +1,9 @@
+table.photo {
+    display:inline;
+}
 .photos {
     text-align: center;
-    padding-top: .5rem;
+    padding-top: .5em;
 }
 a:hover {
     cursor: pointer;
@@ -12,6 +15,9 @@ a:link, a:visited {
 a {
     text-decoration: none;
 }
+a img {
+   border:none; 
+}
 p {
     line-height: 1.8;
 }
@@ -21,7 +27,7 @@ code, pre {
     -webkit-border-radius: 4px;
     border-radius: 4px;
     font-family: Ubuntu Mono,Consolas,Courier,monospace;
-    font-size: 1rem;
+    font-size: 1em;
 }
 code {
     color: #353535;
@@ -30,27 +36,30 @@ code {
 }
 h1, h2, h3, h4, h5, h6 {
     font-family: Lato,sans-serif;
-    margin-bottom: .1rem;
+    margin-bottom: .1em;
 }
 h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
     margin-top: 0;
+}
+h1 {
+    text-align: center;
 }
 .text-right {
     text-align: right;
 }
 .right {
-    padding-left: 1rem;
+    padding-left: 1em;
     float:right;
     text-align: right;
 }
-blockquote{background:#fbfbfb;border-left:4px solid #01a1da;line-height:1.8;padding:1rem;margin:1rem}
+blockquote{background:#fbfbfb;border-left:4px solid #01a1da;line-height:1.8;padding:1em;margin:1em}
 blockquote p{margin:0}
-blockquote p+p{margin-top:1rem}
+blockquote p+p{margin-top:1em}
 
 .page {
 	font-family: monospace;
 	font-weight: bold;
-	padding-left: .5rem;
+	padding-left: .5em;
 }
 .photo {
 }
@@ -92,25 +101,41 @@ blockquote p+p{margin-top:1rem}
     padding-top:0;
     padding-left: 72px; 
     padding-right: 0; 
-    overflow-x: hidden;
+    overflow: hidden;
+}
+.nav a, .subnav a {
+    background: rgba(255, 255, 255, 0);
+    display: block;
+    padding: .5em;
 }
 .nav a:hover {
+    background: #01a1da;/*red;*/
     color: black;
 }
 .nav a:link, .subnav a:visited {
     color: black;
 }
+
+.nav .row .column, .nav.showMenu .row .column:not(.menuicon) {
+    background: rgba(255, 255, 255, 0);
+    height:36px;
+}
+.subnav .row .column, .subnav.showMenu .row .column:not(.menuicon) {
+    background: rgba(255, 255, 255, 0);
+    height:36px;
+}
+
 .nav .row .column:hover, .nav.showMenu .row .column:not(.menuicon):hover {
-background: red;
+background: #01a1da;/*red;*/
 }
 .subnav .row .column:hover, .subnav.showMenu .row .column:not(.menuicon):hover {
-background: red;
+background: #01a1da;/*red;*/
 }
 
 .nav .row .column.menuicon {
     display: none;
 }
-@media screen and (max-width: 600px) {
+@media all and (max-width: 600px) {
   .nav .row .column:not(:first-child) {display: none;}
   .nav .row .column.menuicon {
     position: absolute;
@@ -120,7 +145,7 @@ background: red;
     background: #fea75d;
   }
 }
-@media screen and (max-width: 600px) {
+@media all and (max-width: 600px) {
   .nav.showMenu {position: relative;}
   .nav.showMenu {
     position: fixed;
@@ -135,12 +160,12 @@ background: red;
     display: block;
     text-align: left;
     background: #fea75d;
-    padding: .1rem;
-    padding-left: .8rem;
+    padding: .1em;
+    padding-left: .8em;
     width: 100%;
   }
   .nav.showMenu .row .column.menuicon {
-    top: -.1rem;
+    top: -.1em;
   }
 }
 .subnav{
@@ -156,12 +181,14 @@ background: red;
     padding-top:0;
     padding-left: 72px; 
     padding-right:0; 
-    font-size: .9rem;
+    font-size: .9em;
     overflow-x: hidden;
 }
 
 .subnav a:hover {
     color: black;
+    background: #01a1da;/*red;*/
+    height: 20px;
 }
 .subnav a:link, .subnav a:visited {
     color: black;
@@ -169,7 +196,7 @@ background: red;
 .subnav .row .column.menuicon {
     display: none;
 }
-@media screen and (max-width: 600px) {
+@media all and (max-width: 600px) {
   .subnav .row .column:not(:first-child) {display: none;}
   .subnav .row .column.menuicon {
     position: absolute;
@@ -179,7 +206,7 @@ background: red;
     background: #f5f5f5;
   }
 }
-@media screen and (max-width: 600px) {
+@media all and (max-width: 600px) {
   .subnav.showMenu {position: relative;}
   .subnav.showMenu {
     position: fixed;
@@ -194,8 +221,8 @@ background: red;
     display: block;
     text-align: left;
     background: #f5f5f5;
-    padding: .1rem;
-    padding-left: .8rem;
+    padding: .1em;
+    padding-left: .8em;
     width: 100%;
   }
   .subnav.showMenu .row .column.menuicon {
@@ -206,7 +233,7 @@ background: red;
 .column {
     display: table-cell;
     float:left;
-    padding: .5rem;
+/*    padding: .5em;*/
 }
 .column:last-child{float:right}
 .column:first-child{float:left}
@@ -250,15 +277,15 @@ body {
     background-color: #005095;
     color: #fff;
     font-size: .75em;
-    margin-top: 2rem;
-    margin-right: 2rem;
+    margin-top: 2em;
+    margin-right: 2em;
     padding-right: 0;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 1em;
+    padding-bottom: 1em;
 } 
 .footer td{
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 1em;
+    padding-right: 1em;
 }
 .footer a:hover {
     color: #6bc3e1;
@@ -268,4 +295,7 @@ body {
 }
 .footer a {
     text-decoration: none;
+}
+.none {
+    display:none !important;
 }

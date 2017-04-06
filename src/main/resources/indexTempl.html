@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=9">
 		<meta charset="utf-8">
 
 		<meta name="format-detection" content="telephone=no">
@@ -21,7 +22,6 @@ function toggleClass(elId, elCls, extraCls) {
 }
 </script>
 	</head>
-OHO
 	<body>
 	<div class="wrapper">
 		<div class="header">
@@ -36,14 +36,14 @@ OHO
 
 $navcolumns
 				<div class="column menuicon"><a href="javascript:void(0);" onclick="toggleClass('nav','nav','showMenu')">&#9776;</a></div>
-				<div class="column"></div>
+				<div class="column none"></div>
 			</div>
 		</div>
 		<div class="subnav" id="subnav">
 			<div class="row">
 $!{subnavcolumns}
 				<div class="column menuicon"><a href="javascript:void(0);" onclick="toggleClass('subnav','subnav','showMenu')">&#9776;</a></div>
-<div class="column"></div>
+<div class="column none"></div>
 			</div>
 		</div>
 		</div>
@@ -53,12 +53,13 @@ $!{subnavcolumns}
 		</main>
 *#
 		</div>
-<footer class="footer">
+<div class="footer">
   <table width="100%">
   <tr><td><span>&copy; <a href="">SeVN</a>, All&nbsp;Rights&nbsp;Reserved. </span></td>
-      <td class="right">Icons made by <a href="http://www.flaticon.com/authors/madebyoliver" title="Madebyoliver">Madebyoliver</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC&nbsp;3.0&nbsp;BY</a></td></tr>
+##      <td class="right">Icons made by <a href="http://www.flaticon.com/authors/madebyoliver" title="Madebyoliver">Madebyoliver</a> from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a> is licensed by <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC&nbsp;3.0&nbsp;BY</a></td>
+</tr>
   </table>
-</footer>
+</div>
 	</div>
 	</body>
 </html>
