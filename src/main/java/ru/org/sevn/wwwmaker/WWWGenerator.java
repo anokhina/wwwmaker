@@ -181,6 +181,7 @@ public class WWWGenerator {
 				jobj.put("name", f.getName());
 				imgFilesMap.put(f.getName(), imgFilesIdx);
 			}
+			writeJs(root.getFile(), imgFiles);
 		}
 		int page = 0;
 		for(File f : files) {
@@ -500,25 +501,28 @@ public class WWWGenerator {
 		
 		return writer.toString();
 	}
+	private void writeJs(File dir, JSONArray imgFiles) {
+		BufferedWriter writer = null;
+		try {
+			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
+					new File(dir, "index.js")
+					), "UTF-8"));
+			try {
+				writer.append("var imgFiles=").append(imgFiles.toString(2)).append(";");
+			} finally {
+				writer.close();
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	private void write(HtmlContent content, JSONArray imgFiles) {
 		BufferedWriter writer = null;
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(content.file), "UTF-8"));
 		} catch (UnsupportedEncodingException | FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		BufferedWriter writer1 = null;
-		try {
-			writer1 = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
-					new File(content.file.getParentFile(), "index.js")
-					), "UTF-8"));
-			try {
-				writer1.append("var imgFiles=").append(imgFiles.toString(2)).append(";");
-			} finally {
-				writer1.close();
-			}
-		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
