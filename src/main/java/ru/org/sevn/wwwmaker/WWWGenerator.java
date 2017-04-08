@@ -169,9 +169,12 @@ public class WWWGenerator {
 			int imgFilesIdx = -1;
 			for (File f: filesImg) {
 				imgFilesIdx++;
-				String imgComment = "";
+				String imgComment = "&nbsp;";
 				try {
 					imgComment = UtilHtml.getCleanHtmlBodyContent(ImageUtil.getImageUserCommentString(f, "UTF-8"));
+					if (imgComment == null) {
+						imgComment = "&nbsp;";
+					}
 				} catch (UnsupportedEncodingException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
