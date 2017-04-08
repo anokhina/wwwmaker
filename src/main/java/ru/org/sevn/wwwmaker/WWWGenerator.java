@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -152,22 +153,19 @@ public class WWWGenerator {
 //		if (files.length % contentCntMax > 0) {
 //			pages++;
 //		}
-		JSONObject imgFiles = null;
+		JSONArray imgFiles = null;
+		HashMap<String, Integer> imgFilesMap = new HashMap<>(); 
 		if (writeContent) {
 			File[] filesImg = sort(root.getFile().listFiles(
 					new ComplexFilenameFilter(
 							imgFilenameFilter
 							)
 				), comparator);
-			imgFiles = new JSONObject();
-			JSONObject imgFilesComments = new JSONObject();
-			JSONObject imgFilesKeys = new JSONObject();
-			JSONArray imgFilesIdxs = new JSONArray();
-			imgFiles.put("comments", imgFilesComments);
-			imgFiles.put("keys", imgFilesKeys);
-			imgFiles.put("idxs", imgFilesIdxs);
+			imgFiles = new JSONArray();
 			int imgFilesIdx = -1;
 			for (File f: filesImg) {
+				JSONObject jobj = new JSONObject();
+				imgFiles.put(jobj);
 				imgFilesIdx++;
 				String imgComment = "&nbsp;";
 				try {
@@ -179,10 +177,9 @@ public class WWWGenerator {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				String k = "#"+f.getName();
-				imgFilesComments.put(k, imgComment);
-				imgFilesKeys.put(k, imgFilesIdx);
-				imgFilesIdxs.put(k);
+				jobj.put("comment", imgComment);
+				jobj.put("name", f.getName());
+				imgFilesMap.put(f.getName(), imgFilesIdx);
 			}
 		}
 		int page = 0;
@@ -237,7 +234,7 @@ public class WWWGenerator {
 			if (writeContent) {
 				if (imgFilenameFilter.accept(f.getParentFile(), f.getName())) {
 					contentCntImg++;
-					lastContent = appendContent(pageContent, getImgHref(root.getFile(), f), lastContent, "img");
+					lastContent = appendContent(pageContent, getImgHref(root.getFile(), f, imgFilesMap, imgFiles), lastContent, "img");
 				} else
 				if (contentFilenameFilter.accept(f.getParentFile(), f.getName())) {
 					contentCnt++;
@@ -280,7 +277,6 @@ public class WWWGenerator {
 		if (content == null) {
 			emptyContent = new HtmlContent(root);
 			emptyContent.file = new File(root.getFile(), "index.html");
-			//TODO links to submenu
 			for (Menu m : root.getMenus()) {
 				File f = m.getContentFile();
 				if (f == null) {
@@ -332,12 +328,13 @@ public class WWWGenerator {
 		templ.merge(context, writer);
 		return writer.toString();
 	}
-	private String getImgHref(File root, File img) {
+	private String getImgHref(File root, File img, HashMap<String, Integer> imgFilesMap, JSONArray imgFiles) {
 		Template templ = ve.getTemplate("imgTempl.html");
 		StringWriter writer = new StringWriter();
 		VelocityContext context = new VelocityContext();
 		
 		context.put("href", FileUtil.getRelativePath(root, img));
+		context.put("hrefidx", imgFilesMap.get(img.getName()));
 		
 		File thumbdir = new File(img.getParentFile(), ".thumb");
 		File thumbdirBig = new File(img.getParentFile(), ".thumbg");
@@ -349,9 +346,9 @@ public class WWWGenerator {
 		}
 		File thumbimg = new File(thumbdir, img.getName()+".png");
 		try {
-			String imgComment = UtilHtml.getCleanHtmlBodyContent(ImageUtil.getImageUserCommentString(img, "UTF-8"));
+			String imgComment = imgFiles.getJSONObject(imgFilesMap.get(img.getName())).getString("comment");
 			context.put("imgComment", imgComment);
-		} catch (UnsupportedEncodingException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
@@ -503,11 +500,25 @@ public class WWWGenerator {
 		
 		return writer.toString();
 	}
-	private void write(HtmlContent content, JSONObject imgFiles) {
+	private void write(HtmlContent content, JSONArray imgFiles) {
 		BufferedWriter writer = null;
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(content.file), "UTF-8"));
 		} catch (UnsupportedEncodingException | FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		BufferedWriter writer1 = null;
+		try {
+			writer1 = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
+					new File(content.file.getParentFile(), "index.js")
+					), "UTF-8"));
+			try {
+				writer1.append("var imgFiles=").append(imgFiles.toString(2)).append(";");
+			} finally {
+				writer1.close();
+			}
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -518,7 +529,6 @@ public class WWWGenerator {
 		
 		appendMenus(content, context);
 		context.put("fakeimg", FileUtil.getRelativePath(content.file, logoFile)); 
-		context.put("imgFiles", imgFiles.toString(2));
 		
 		context.put("pageContent", content.content.toString());
 		context.put("breadcrumbs", makeBreadcrumbs(content.root, null));
