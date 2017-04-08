@@ -1,3 +1,43 @@
+.imgView {
+    display:block;
+    background: white;
+    text-align: center;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: larger;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 72px;
+    left: 0;
+    z-index: 1001;
+}
+.close {
+    position: absolute;
+    text-align: center;
+    top: 0;
+    right: 0;
+    background: black;
+    color: white;
+    width: 36px;
+    height: 36px;
+}
+.vid {
+    height: 160px;
+}
+.video {
+    display:inline;
+}
+.videos {
+    text-align: center;
+    padding-top: .5em;
+}
+.breadcrumb {
+    padding: 0;
+    padding-right: 3px;
+    line-height: 2.5;
+    display:inline;
+}
 table.photo {
     display:inline;
 }

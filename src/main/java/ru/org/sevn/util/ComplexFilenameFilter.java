@@ -26,12 +26,15 @@ public class ComplexFilenameFilter implements FilenameFilter {
 	}
 	@Override
 	public boolean accept(File dir, String name) {
+		boolean ret = false; 
 		for (FilenameFilter ff : filters) {
 			if (ff.accept(dir, name)) {
-				return true;
+				ret = true;
+				break;
 			}
 		}
-		return false;
+		//System.err.println("acc>>"+ret+":"+name);
+		return ret;
 	}
 
 }

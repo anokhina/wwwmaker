@@ -18,6 +18,7 @@ package ru.org.sevn.wwwmaker;
 public class DirProperties {
 	private int contentCntMax = 2;
 	private int contentCntMaxImg = 2;
+	private int contentCntMaxVid = 2;
 	private String order;
 	private boolean singlePage;
 	private boolean modify;
@@ -59,5 +60,11 @@ public class DirProperties {
 	}
 	public void setSinglePage(boolean singlePage) {
 		this.singlePage = singlePage;
+	}
+	public int getContentCntMaxVid() {
+		return contentCntMaxVid;
+	}
+	public void setContentCntMaxVid(int contentCntVid) {
+		this.contentCntMaxVid = contentCntVid;
 	}
 }

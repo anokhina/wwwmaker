@@ -68,10 +68,16 @@ public class FileUtil {
 	public static String getRelativePath(File fromFile, File toFile) {
 		if (toFile != null) {
 			ArrayList<File> lst = getParents(fromFile, null);
+			if(fromFile.isDirectory()) {
+				lst.add(fromFile);
+			}
 			File rootFile = getRoot(toFile, lst);
 			if (rootFile != null) {
 				String ret = toRoot(rootFile, fromFile) + toFile.getAbsolutePath().replace(rootFile.getAbsolutePath(), "").replace("\\", "/");
-//				System.err.println("---------href----"+fromFile+":"+toFile+":"+ret);
+				if (ret.startsWith("./")) {
+					ret = ret.substring("./".length());
+				}
+				//System.err.println("---------href----"+fromFile+":"+toFile+":"+ret);
 				return ret;
 			}
 		}

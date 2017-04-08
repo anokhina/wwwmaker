@@ -34,6 +34,8 @@ import javax.swing.ImageIcon;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import ru.org.sevn.rss.Rss;
 import ru.org.sevn.rss.RssChanel;
@@ -102,6 +104,12 @@ public class WWWGenerator {
 		if ("img".equals(lastContent) && ! "img".equals(contentType)) {
 			pageContent.content.append("</div>");
 		}
+		if ("vid".equals(contentType) &&  !"vid".equals(lastContent)) {
+			pageContent.content.append("<div class='videos'>");
+		}
+		if ("vid".equals(lastContent) && ! "vid".equals(contentType)) {
+			pageContent.content.append("</div>");
+		}
 		pageContent.content.append(content);
 		if ("text".equals(contentType)) {
 			pageContent.content.append("<br>");
@@ -129,35 +137,72 @@ public class WWWGenerator {
 		
 		int contentCnt = 0;
 		int contentCntImg = 0;
+		int contentCntVid = 0;
 		FilenameFilter contentFilenameFilter = new StartWithFilenameFilter("content", ".html");
 		FilenameFilter imgFilenameFilter = new StartWithFilenameFilter("img-", ".jpg");
+		FilenameFilter vidFilenameFilter = new StartWithFilenameFilter("vid-", ".mp4");
 		File[] files = sort(root.getFile().listFiles(
 				new ComplexFilenameFilter(
 						contentFilenameFilter,
-						imgFilenameFilter
+						imgFilenameFilter,
+						vidFilenameFilter
 						)
 			), comparator);
 		int pages = files.length / root.getDirProperties().getContentCntMax();
 //		if (files.length % contentCntMax > 0) {
 //			pages++;
 //		}
+		JSONObject imgFiles = null;
+		if (writeContent) {
+			File[] filesImg = sort(root.getFile().listFiles(
+					new ComplexFilenameFilter(
+							imgFilenameFilter
+							)
+				), comparator);
+			imgFiles = new JSONObject();
+			JSONObject imgFilesComments = new JSONObject();
+			JSONObject imgFilesKeys = new JSONObject();
+			JSONArray imgFilesIdxs = new JSONArray();
+			imgFiles.put("comments", imgFilesComments);
+			imgFiles.put("keys", imgFilesKeys);
+			imgFiles.put("idxs", imgFilesIdxs);
+			int imgFilesIdx = -1;
+			for (File f: filesImg) {
+				imgFilesIdx++;
+				String imgComment = "";
+				try {
+					imgComment = UtilHtml.getCleanHtmlBodyContent(ImageUtil.getImageUserCommentString(f, "UTF-8"));
+				} catch (UnsupportedEncodingException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				String k = "#"+f.getName();
+				imgFilesComments.put(k, imgComment);
+				imgFilesKeys.put(k, imgFilesIdx);
+				imgFilesIdxs.put(k);
+			}
+		}
 		int page = 0;
-		
 		for(File f : files) {
 			if (imgFilenameFilter.accept(f.getParentFile(), f.getName())) {
 				contentCntImg++;
 			} else if (contentFilenameFilter.accept(f.getParentFile(), f.getName())) {
 				contentCnt++;
+			} else if (vidFilenameFilter.accept(f.getParentFile(), f.getName())) {
+				contentCntImg++; // ?????
 			}
 			if (contentCnt >= root.getDirProperties().getContentCntMax() || 
-				contentCntImg >= root.getDirProperties().getContentCntMaxImg()) {
+				contentCntImg >= root.getDirProperties().getContentCntMaxImg() ||
+				contentCntVid >= root.getDirProperties().getContentCntMaxVid()
+				) {
 				
 				contentCnt = 0;
 				contentCntImg = 0;
+				contentCntVid = 0;
 				page++;
 			}
 		}
-		if (contentCnt == 0 && contentCntImg == 0) {
+		if (contentCnt == 0 && contentCntImg == 0 && contentCntVid == 0) {
 		} else {
 			pages = page + 1;
 		}
@@ -165,6 +210,7 @@ public class WWWGenerator {
 		page = 0;
 		contentCnt = 0;
 		contentCntImg = 0;
+		contentCntVid = 0;
 		HtmlContent pageContent = null;
 		String lastContent = null;
 		for(File f : files) {
@@ -193,16 +239,23 @@ public class WWWGenerator {
 				if (contentFilenameFilter.accept(f.getParentFile(), f.getName())) {
 					contentCnt++;
 					lastContent = appendContent(pageContent, getText(f), lastContent, "text");
+				} else
+				if (vidFilenameFilter.accept(f.getParentFile(), f.getName())) {
+					contentCntImg++; //?????????
+					lastContent = appendContent(pageContent, getVidHref(root.getFile(), f), lastContent, "img");
 				}
 				if (contentCnt >= root.getDirProperties().getContentCntMax() || 
-					contentCntImg >= root.getDirProperties().getContentCntMaxImg()) {
+					contentCntImg >= root.getDirProperties().getContentCntMaxImg() ||
+					contentCntVid >= root.getDirProperties().getContentCntMaxVid() 
+					) {
 					
 					contentCnt = 0;
 					contentCntImg = 0;
+					contentCntVid = 0;
 
 					lastContent = appendContent(pageContent, pagination(page, pages, root.getFile()), lastContent, "page");
 					if (content != pageContent) {
-						write(pageContent);
+						write(pageContent, imgFiles);
 					}
 					page++;
 					pageContent = new HtmlContent(root);
@@ -214,10 +267,10 @@ public class WWWGenerator {
 		if (writeContent) {
 			if (pageContent != null && content != pageContent) {
 				lastContent = appendContent(pageContent, pagination(page, pages, root.getFile()), lastContent, "page");
-				write(pageContent);
+				write(pageContent, imgFiles);
 			}
 			if (content != null) {
-				write(content);
+				write(content, imgFiles);
 			}
 		}
 		HtmlContent emptyContent = null;
@@ -238,7 +291,7 @@ public class WWWGenerator {
 		}
 		if (writeContent && emptyContent != null) {
 			lastContent = appendContent(emptyContent, "\n", null, "text");
-			write(emptyContent);
+			write(emptyContent, imgFiles);
 		}
 		//TODO
 		// up menu
@@ -251,15 +304,28 @@ public class WWWGenerator {
 		root.setContentFile(content.file);
 		return content;
 	}
+	private String getVidHref(File root, File img) {
+		Template templ = ve.getTemplate("videoTempl.html");
+		StringWriter writer = new StringWriter();
+		VelocityContext context = new VelocityContext();
+		context.put("href", FileUtil.getRelativePath(root, img));
+		templ.merge(context, writer);
+		return writer.toString();
+	}
 	private String getImgHref(File root, File img) {
 		Template templ = ve.getTemplate("imgTempl.html");
 		StringWriter writer = new StringWriter();
 		VelocityContext context = new VelocityContext();
 		
 		context.put("href", FileUtil.getRelativePath(root, img));
+		
 		File thumbdir = new File(img.getParentFile(), ".thumb");
+		File thumbdirBig = new File(img.getParentFile(), ".thumbg");
 		if (!thumbdir.exists()) {
 			thumbdir.mkdirs();
+		}
+		if (!thumbdirBig.exists()) {
+			thumbdirBig.mkdirs();
 		}
 		File thumbimg = new File(thumbdir, img.getName()+".png");
 		try {
@@ -271,10 +337,19 @@ public class WWWGenerator {
 		}
 		if (!thumbimg.exists()) {
 			System.err.println("generate thumb>>>"+thumbimg);
-			ImageIcon ii = new ImageIcon(img.getPath());
-			ii = ImageUtil.getScaledImageIconHeight(ii, 160, false);
+			ImageIcon origimg = new ImageIcon(img.getPath());
+			// 1920 х 1080 2560 х 1440
+			ImageIcon ii;
+			ii = ImageUtil.getScaledImageIconHeight(origimg, 160, false);
 			try {
 				ImageIO.write(ImageUtil.getBufferedImage(ii), "png", thumbimg);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			ii = ImageUtil.getScaledImageIconHeight(origimg, 1080, false);
+			try {
+				ImageIO.write(ImageUtil.getBufferedImage(ii), "png", new File(thumbdirBig, img.getName()+".png"));
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -384,7 +459,31 @@ public class WWWGenerator {
 		}
 		return content;
 	}
-	private void write(HtmlContent content) {
+	private String makeBreadcrumbs(final Menu m, final String prevpath) {
+		if (m == null) return "";
+		Menu parent = m.getParent();
+		if (parent == null) {
+			return "";
+		}
+		String path = "";
+		if (prevpath != null) {
+			path = prevpath;
+		}
+		StringWriter writer = new StringWriter();
+		writer.append(makeBreadcrumbs(parent, path + "../"));
+		
+		Template template = ve.getTemplate("breadcrumbTempl.html");
+		VelocityContext context = new VelocityContext();
+		context.put("title", m.getAnyTitle());
+		if (prevpath != null) {
+			context.put("href", path + "index.html");
+		}
+		
+		template.merge(context, writer);
+		
+		return writer.toString();
+	}
+	private void write(HtmlContent content, JSONObject imgFiles) {
 		BufferedWriter writer = null;
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(content.file), "UTF-8"));
@@ -398,7 +497,11 @@ public class WWWGenerator {
 		VelocityContext context = new VelocityContext();
 		
 		appendMenus(content, context);
+		context.put("fakeimg", FileUtil.getRelativePath(content.file, logoFile)); 
+		context.put("imgFiles", imgFiles.toString(2));
+		
 		context.put("pageContent", content.content.toString());
+		context.put("breadcrumbs", makeBreadcrumbs(content.root, null));
 		context.put("title", content.root.getAnyTitle());
 		
 		context.put("cssName", FileUtil.getRelativePath(content.file, cssFile));

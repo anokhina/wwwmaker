@@ -11,7 +11,83 @@
 		<link rel="icon" href="$!{favicon}">
 
 		<title>$!{title}</title>
+<style>
+.thumbImg {
+  padding-top: .5em;
+  display: block;
+  margin: auto;
+  max-width: 99%;
+  max-height: 99%;
+}
+.image{
+  position: relative;
+}
+.image a{
+  display: block;      
+  position: absolute;
+  background: rgba(255, 255, 255, 0);
+}
+#imageComment {
+  text-align: center;
+}
+</style>
+<script >
+#if ($imgFiles)
+var imgFiles = $imgFiles;
+#else
+var imgFiles = {};
+#end
+</script>
 <script>
+
+function nohash(s) {
+  if (s.length > 0 && s.substring(0,1) == "#") {
+    return s.substring(1, s.length);
+  }
+  return s;
+}
+function showImgByKey(k) {
+  var comment = imgFiles.comments[k];
+  var imgname = nohash(k);
+  showImg(imgname, ".thumbg/"+imgname+".png", comment);
+}
+function showImg(pic, picthumb, comment) {
+  var x = document.getElementById("thumbImg");
+  var cmt = document.getElementById("imageComment");
+  var imgref = document.getElementById("imgref");
+  x.src = picthumb;
+  x.imgkey = pic;
+  imgref.href=pic;
+  cmt.innerHTML=comment;
+}
+function nextImg(incr) {
+  var x = document.getElementById("thumbImg");
+  var idx = 0;
+  var imgkey = null;
+  if ("imgkey" in  x) {
+    imgkey = "#" + x.imgkey;
+    if (imgkey) {
+      var cidx = imgFiles.keys[imgkey];
+      idx = cidx + incr;
+    }
+  }
+  if (idx >= 0 && idx < imgFiles.idxs.length) {
+    showImgByKey(imgFiles.idxs[idx]);
+  }
+}
+function nextImgClck(incr) {
+  event.preventDefault ? event.preventDefault() : (event.returnValue = false);
+  nextImg(incr);
+  //var uuu = document.location.protocol +"//"+ document.location.hostname + document.location.pathname;
+}
+</script>
+
+<script>
+function imgView(k) {
+  event.preventDefault ? event.preventDefault() : (event.returnValue = false);
+  toggleClass("imgView", "imgView", "none");
+  showImgByKey(k);
+}
 function toggleClass(elId, elCls, extraCls) {
     var x = document.getElementById(elId);
     if (x.className === elCls) {
@@ -47,11 +123,17 @@ $!{subnavcolumns}
 			</div>
 		</div>
 		</div>
-		<div class="content">$pageContent
-#*
-		<main>$pageContent
-		</main>
-*#
+                <div class="imgView none" id="imgView">
+<div class="image">
+  <img id="thumbImg" src="$fakeimg" class="thumbImg" />
+  <a              href="$fakeimg" style="top: 0%; left: 0%; width: 30%; height: 100%;" onclick="nextImgClck(-1)">&nbsp;</a>
+  <a id="imgref"  href="$fakeimg" style="top: 0%; left: 30%; width: 40%; height: 100%;" >&nbsp;</a>
+  <a              href="$fakeimg" style="top: 0%; left: 70%; width: 30%; height: 100%;" onclick="nextImgClck(1)">&nbsp;</a>
+</div>
+<div id="imageComment">comment</div>
+                  <div class="close" onclick='toggleClass("imgView", "imgView", "none")'>x</div>
+                </div>
+		<div class="content"><div id="breadcrumbs">$breadcrumbs</div>$pageContent
 		</div>
 <div class="footer">
   <table width="100%">

@@ -40,6 +40,7 @@ public class ClasspathVelocityEngine extends VelocityEngine {
 	    ve.setProperty("file.resource.loader.class", FileResourceLoader.class.getName());
 	    ve.setProperty("file.resource.loader.path", path);
 	    ve.setProperty("file.resource.loader.cache", false);
+	    ve.setProperty("input.encoding", "UTF-8");
 	    return ve;
 	}
 }
