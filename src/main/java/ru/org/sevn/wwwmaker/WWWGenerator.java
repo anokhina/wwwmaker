@@ -280,6 +280,14 @@ public class WWWGenerator {
 		if (content == null) {
 			emptyContent = new HtmlContent(root);
 			emptyContent.file = new File(root.getFile(), "index.html");
+			//TODO links to submenu
+			for (Menu m : root.getMenus()) {
+				File f = m.getContentFile();
+				if (f == null) {
+					f = m.getFile();
+				}
+				appendContent(emptyContent, getHref(root.getFile(), f, m.getAnyTitle()), "text", "text");
+			}
 		}
 		if (content == null && subcontent != null) {
 			content = subcontent;
@@ -306,6 +314,15 @@ public class WWWGenerator {
 	private HtmlContent applyContent(Menu root, HtmlContent content) {
 		root.setContentFile(content.file);
 		return content;
+	}
+	private String getHref(File root, File img, String title) {
+		Template templ = ve.getTemplate("linkTempl.html");
+		StringWriter writer = new StringWriter();
+		VelocityContext context = new VelocityContext();
+		context.put("href", FileUtil.getRelativePath(root, img));
+		context.put("title", title);
+		templ.merge(context, writer);
+		return writer.toString();
 	}
 	private String getVidHref(File root, File img) {
 		Template templ = ve.getTemplate("videoTempl.html");
