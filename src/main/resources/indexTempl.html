@@ -20,24 +20,59 @@ function nohash(s) {
   }
   return s;
 }
+function addClass(x, cls) {
+  if(x.className.indexOf(cls) >= 0) { //not right
+  } else {
+    x.className += (" " + cls);
+  }
+}
+function replClass(x, cls, cls2) {
+  x.className = x.className.replace(new RegExp('(?:^|\\s)'+ cls + '(?:\\s|$)'), cls2);
+}
+
 function showImgByKey(k) {
   if (k >= 0 && k < imgFiles.length) {
     var comment = imgFiles[k].comment;
     var imgname = nohash(imgFiles[k].name);
-    showImg(imgname, ".thumbg/"+imgname+".png", comment, k);
+    if(imgFiles[k].tp == 1) {
+      var y = document.getElementById("videoview");
+      addClass(y, "none");
+      var x = document.getElementById("thumbImg");
+      replClass(x, "none", "");
+      showImg(imgname, ".thumbg/"+imgname+".png", comment, k);
+    } else {
+      var x = document.getElementById("thumbImg");
+      addClass(x, "none");
+      var y = document.getElementById("videoview");
+      replClass(y, "none", "");
+      showVid(imgname, imgname, comment, k);
+    }
   }
 }
 function showImg(pic, picthumb, comment, k) {
   var x = document.getElementById("thumbImg");
+  var y = document.getElementById("imgView");
+
   var cmt = document.getElementById("imageComment");
   var imgref = document.getElementById("imgref");
   x.src = picthumb;
-  x.imgkey = k;
+  y.imgkey = k;
+  imgref.href=pic;
+  cmt.innerHTML="&nbsp;"+comment;
+}
+function showVid(pic, picthumb, comment, k) {
+  var x = document.getElementById("videoview");
+  var y = document.getElementById("imgView");
+
+  var cmt = document.getElementById("imageComment");
+  var imgref = document.getElementById("imgref");
+  x.src = picthumb;
+  y.imgkey = k;
   imgref.href=pic;
   cmt.innerHTML="&nbsp;"+comment;
 }
 function nextImg(incr) {
-  var x = document.getElementById("thumbImg");
+  var x = document.getElementById("imgView");
   var idx = 0;
   var imgkey = null;
   if ("imgkey" in  x) {
@@ -98,13 +133,19 @@ $!{subnavcolumns}
 <table>
 <tr><td>
   <div id="imageComment">comment</div>
+  <a              href="$fakeimg" onclick="nextImgClck(-1)">&lt;&lt;&lt;</a>
+  <a id="imgref"  href="$fakeimg" >&dArr;</a>
+  <a              href="$fakeimg" onclick="nextImgClck(1)">&gt;&gt;&gt;</a>
 </td></tr>
 <tr><td>
-<div class="image">
-  <img id="thumbImg" src="$fakeimg" class="thumbImg" />
+<div id="imgView" class="image">
+  <img   id="thumbImg" src="$fakeimg" class="thumbImg" />
+  <video id="videoview" controls><source src="$href" type="video/mp4"> Браузер не поддерживает встроенное видео. Your browser does not support the video tag. </video>
+#*
   <a              href="$fakeimg" style="top: 0%; left: 0%; width: 30%; height: 100%;" onclick="nextImgClck(-1)">&nbsp;</a>
   <a id="imgref"  href="$fakeimg" style="top: 0%; left: 30%; width: 40%; height: 100%;" >&nbsp;</a>
   <a              href="$fakeimg" style="top: 0%; left: 70%; width: 30%; height: 100%;" onclick="nextImgClck(1)">&nbsp;</a>
+*#
 </div>
 </td></tr>
 </table>

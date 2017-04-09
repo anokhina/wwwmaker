@@ -158,7 +158,8 @@ public class WWWGenerator {
 		if (writeContent) {
 			File[] filesImg = sort(root.getFile().listFiles(
 					new ComplexFilenameFilter(
-							imgFilenameFilter
+							imgFilenameFilter,
+							vidFilenameFilter
 							)
 				), comparator);
 			imgFiles = new JSONArray();
@@ -168,14 +169,19 @@ public class WWWGenerator {
 				imgFiles.put(jobj);
 				imgFilesIdx++;
 				String imgComment = "&nbsp;";
-				try {
-					imgComment = UtilHtml.getCleanHtmlBodyContent(ImageUtil.getImageUserCommentString(f, "UTF-8"));
-					if (imgComment == null) {
-						imgComment = "&nbsp;";
+				if (imgFilenameFilter.accept(f.getParentFile(), f.getName())) {
+					try {
+						imgComment = UtilHtml.getCleanHtmlBodyContent(ImageUtil.getImageUserCommentString(f, "UTF-8"));
+						if (imgComment == null) {
+							imgComment = "&nbsp;";
+						}
+					} catch (UnsupportedEncodingException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
 					}
-				} catch (UnsupportedEncodingException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					jobj.put("tp", 1); 
+				} else {
+					jobj.put("tp", 2); 
 				}
 				jobj.put("comment", imgComment);
 				jobj.put("name", f.getName());

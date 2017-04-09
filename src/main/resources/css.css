@@ -9,6 +9,13 @@
   max-width: 99%;
   max-height: 90vh;
 }
+#videoview {
+  padding-top: .5em;
+  display: block;
+  margin: auto;
+  max-width: 99%;
+  max-height: 90vh;
+}
 .image{
   position: relative;
 }
