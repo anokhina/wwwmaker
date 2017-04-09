@@ -1,3 +1,7 @@
+.previewIcon {
+  display: inline;
+  padding-right: 10px;  
+}
 .imgView table {
   display: inline;
   width: 100%;

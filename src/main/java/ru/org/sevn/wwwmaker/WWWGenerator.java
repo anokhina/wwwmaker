@@ -249,7 +249,7 @@ public class WWWGenerator {
 				} else
 				if (vidFilenameFilter.accept(f.getParentFile(), f.getName())) {
 					contentCntImg++; //?????????
-					lastContent = appendContent(pageContent, getVidHref(root.getFile(), f), lastContent, "img");
+					lastContent = appendContent(pageContent, getVidHref(root.getFile(), f, imgFilesMap), lastContent, "img");
 				}
 				if (contentCnt >= root.getDirProperties().getContentCntMax() || 
 					contentCntImg >= root.getDirProperties().getContentCntMaxImg() ||
@@ -327,11 +327,12 @@ public class WWWGenerator {
 		templ.merge(context, writer);
 		return writer.toString();
 	}
-	private String getVidHref(File root, File img) {
+	private String getVidHref(File root, File img, HashMap<String, Integer> imgFilesMap) {
 		Template templ = ve.getTemplate("videoTempl.html");
 		StringWriter writer = new StringWriter();
 		VelocityContext context = new VelocityContext();
 		context.put("href", FileUtil.getRelativePath(root, img));
+		context.put("hrefidx", imgFilesMap.get(img.getName()));
 		templ.merge(context, writer);
 		return writer.toString();
 	}
