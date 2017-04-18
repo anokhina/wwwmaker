@@ -3,7 +3,7 @@
 	<head>
 		<meta http-equiv="X-UA-Compatible" content="IE=9">
 		<meta charset="utf-8">
-
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta name="format-detection" content="telephone=no">
 
 		<link rel="stylesheet" href="$!{cssName}">
@@ -140,7 +140,7 @@ $!{subnavcolumns}
 <tr><td>
 <div id="imgView" class="image">
   <img   id="thumbImg" src="$fakeimg" class="thumbImg" />
-  <video id="videoview" controls><source src="$href" type="video/mp4"> Браузер не поддерживает встроенное видео. Your browser does not support the video tag. </video>
+  <video id="videoview" controls><source src="$!{href}" type="video/mp4"> Браузер не поддерживает встроенное видео. Your browser does not support the video tag. </video>
 #*
   <a              href="$fakeimg" style="top: 0%; left: 0%; width: 30%; height: 100%;" onclick="nextImgClck(-1)">&nbsp;</a>
   <a id="imgref"  href="$fakeimg" style="top: 0%; left: 30%; width: 40%; height: 100%;" >&nbsp;</a>
