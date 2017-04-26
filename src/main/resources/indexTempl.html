@@ -42,7 +42,7 @@ function showImgByKey(k) {
       #if($useThumb)
       showImg(imgname, ".thumbg/"+imgname+".png", comment, k);
       #else
-      showImg(imgname, imgname, comment, k);
+      showImg(imgname, imgname+"?imgThmb=bg", comment, k);
       #end
     } else {
       var x = document.getElementById("thumbImg");
