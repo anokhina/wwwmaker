@@ -39,7 +39,11 @@ function showImgByKey(k) {
       addClass(y, "none");
       var x = document.getElementById("thumbImg");
       replClass(x, "none", "");
+      #if($useThumb)
       showImg(imgname, ".thumbg/"+imgname+".png", comment, k);
+      #else
+      showImg(imgname, imgname, comment, k);
+      #end
     } else {
       var x = document.getElementById("thumbImg");
       addClass(x, "none");

@@ -51,6 +51,7 @@ import ru.org.sevn.utilwt.ImageUtil;
 
 public class WWWGenerator {
 	private boolean force = !true;
+        private boolean useThumb = true;
 	public static final String[] ICONS_EXT = new String[] {".png", ".jpg", ".jpeg"};
 	public static final String[] TXT_EXT = new String[] {".txt"};
 
@@ -344,44 +345,48 @@ public class WWWGenerator {
 		context.put("href", FileUtil.getRelativePath(root, img));
 		context.put("hrefidx", imgFilesMap.get(img.getName()));
 		
-		File thumbdir = new File(img.getParentFile(), ".thumb");
-		File thumbdirBig = new File(img.getParentFile(), ".thumbg");
-		if (!thumbdir.exists()) {
-			thumbdir.mkdirs();
-		}
-		if (!thumbdirBig.exists()) {
-			thumbdirBig.mkdirs();
-		}
-		File thumbimg = new File(thumbdir, img.getName()+".png");
-		try {
-			String imgComment = imgFiles.getJSONObject(imgFilesMap.get(img.getName())).getString("comment");
-			context.put("imgComment", imgComment);
-		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		if (!thumbimg.exists()) {
-			System.err.println("generate thumb>>>"+thumbimg);
-			ImageIcon origimg = new ImageIcon(img.getPath());
-			// 1920 х 1080 2560 х 1440
-			ImageIcon ii;
-			ii = ImageUtil.getScaledImageIconHeight(origimg, 160, false);
-			try {
-				ImageIO.write(ImageUtil.getBufferedImage(ii), "png", thumbimg);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			ii = ImageUtil.getScaledImageIconHeight(origimg, 1080, false);
-			try {
-				ImageIO.write(ImageUtil.getBufferedImage(ii), "png", new File(thumbdirBig, img.getName()+".png"));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		context.put("hrefthumb", FileUtil.getRelativePath(root, thumbimg)); 
+        context.put("useThumb", useThumb);
+        if (useThumb) {
+            File thumbdir = new File(img.getParentFile(), ".thumb");
+            File thumbdirBig = new File(img.getParentFile(), ".thumbg");
+            if (!thumbdir.exists()) {
+                thumbdir.mkdirs();
+            }
+            if (!thumbdirBig.exists()) {
+                thumbdirBig.mkdirs();
+            }
+            File thumbimg = new File(thumbdir, img.getName() + ".png");
+            try {
+                String imgComment = imgFiles.getJSONObject(imgFilesMap.get(img.getName())).getString("comment");
+                context.put("imgComment", imgComment);
+            } catch (Exception e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+            if (!thumbimg.exists()) {
+                System.err.println("generate thumb>>>" + thumbimg);
+                ImageIcon origimg = new ImageIcon(img.getPath());
+                // 1920 х 1080 2560 х 1440
+                ImageIcon ii;
+                ii = ImageUtil.getScaledImageIconHeight(origimg, 160, false);
+                try {
+                    ImageIO.write(ImageUtil.getBufferedImage(ii), "png", thumbimg);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                ii = ImageUtil.getScaledImageIconHeight(origimg, 1080, false);
+                try {
+                    ImageIO.write(ImageUtil.getBufferedImage(ii), "png", new File(thumbdirBig, img.getName() + ".png"));
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            context.put("hrefthumb", FileUtil.getRelativePath(root, thumbimg));
+        } else {
+            context.put("hrefthumb", FileUtil.getRelativePath(root, img));
+        }
 		templ.merge(context, writer);
 		return writer.toString();
 	}
@@ -537,7 +542,8 @@ public class WWWGenerator {
 		System.out.println(">>>>>>>>>>>"+content.file);
 		Template template = ve.getTemplate("indexTempl.html");
 		VelocityContext context = new VelocityContext();
-		
+        context.put("useThumb", useThumb);
+
 		appendMenus(content, context);
 		context.put("fakeimg", FileUtil.getRelativePath(content.file, logoFile)); 
 		
@@ -676,5 +682,13 @@ public class WWWGenerator {
 	public void setForce(boolean force) {
 		this.force = force;
 	}
+
+    public boolean isUseThumb() {
+        return useThumb;
+    }
+
+    public void setUseThumb(boolean useThumb) {
+        this.useThumb = useThumb;
+    }
 	
 }

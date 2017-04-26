@@ -34,6 +34,7 @@ public class AppWWW {
 			String fileStr = new String(Files.readAllBytes(config.toPath()), "UTF-8");
 			JSONObject jobj = new JSONObject(fileStr);
 			boolean force = false;
+            boolean useThumb = true;
 			String logo = "logo.png";
 			String favico = "logo.ico";
 			String css = "css.css";
@@ -43,6 +44,9 @@ public class AppWWW {
 			}
 			if (jobj.has("force")) {
 				force = jobj.getBoolean("force");
+			}
+			if (jobj.has("useThumb")) {
+				useThumb = jobj.getBoolean("useThumb");
 			}
 			if (jobj.has("logo")) {
 				logo = jobj.getString("logo");
@@ -72,6 +76,7 @@ public class AppWWW {
 						ve
 						);
 				gen.setForce(force);
+                gen.setUseThumb(useThumb);
 				gen.fillMenu(root, false);
 				gen.fillMenu(root, !false);
 			} else {
