@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.org.sevn.wwwmaker;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,6 +29,8 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -35,6 +38,9 @@ import javax.swing.ImageIcon;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
+import org.jcodec.api.awt.FrameGrab;
+import org.jcodec.common.FileChannelWrapper;
+import org.jcodec.common.NIOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -140,7 +146,10 @@ public class WWWGenerator {
 		int contentCnt = 0;
 		int contentCntImg = 0;
 		int contentCntVid = 0;
-		FilenameFilter contentFilenameFilter = new StartWithFilenameFilter("content", ".html");
+		FilenameFilter contentFilenameFilter = new ComplexFilenameFilter(
+                new StartWithFilenameFilter("content", ".html"),
+                new StartWithFilenameFilter("_content", ".html")
+        );
 		FilenameFilter imgFilenameFilter = new StartWithFilenameFilter("img-", ".jpg");
 		FilenameFilter vidFilenameFilter = new StartWithFilenameFilter("vid-", ".mp4");
 		File[] files = sort(root.getFile().listFiles(
@@ -332,12 +341,94 @@ public class WWWGenerator {
 		Template templ = ve.getTemplate("videoTempl.html");
 		StringWriter writer = new StringWriter();
 		VelocityContext context = new VelocityContext();
+        File thumbimg = new File(img.getAbsolutePath() + ".png");
+        makeThumbs(new FileVideoIconSupplier(img), thumbimg, 160);
 		context.put("href", FileUtil.getRelativePath(root, img));
 		context.put("hrefidx", imgFilesMap.get(img.getName()));
 		templ.merge(context, writer);
 		return writer.toString();
 	}
-	private String getImgHref(File root, File img, HashMap<String, Integer> imgFilesMap, JSONArray imgFiles) {
+    
+    public static class FileVideoIconSupplier implements ImageIconSupplier {
+        private final File img;
+        private ImageIcon imageIcon;
+        public FileVideoIconSupplier(File fl) {
+            this.img = fl;
+        }
+
+        @Override
+        public ImageIcon getImageIcon() {
+            if (imageIcon == null) {
+                try {
+                    FileChannelWrapper grabch = NIOUtils.readableFileChannel(img);
+                    BufferedImage frame = null;
+                    try { 
+                        FrameGrab grab = new FrameGrab(grabch);
+                        for (int i = 0; i < 50; i++) {
+                            grab.seekToFrameSloppy(50);
+                            try {
+                                frame = grab.getFrame();
+                            } catch (Exception e) {
+                                Logger.getLogger(WWWGenerator.class.getName()).log(Level.SEVERE, null, e);
+                            }
+                        }
+                    } finally {
+                        NIOUtils.closeQuietly(grabch);
+                    }
+                    if (frame != null) {
+                        imageIcon = new ImageIcon(frame);
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger(FileVideoIconSupplier.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            return imageIcon;
+        }
+    }
+    
+    public static class FileImageIconSupplier implements ImageIconSupplier {
+        private final File img;
+        private ImageIcon imageIcon;
+        public FileImageIconSupplier(File fl) {
+            this.img = fl;
+        }
+
+        @Override
+        public ImageIcon getImageIcon() {
+            if (imageIcon == null) {
+                imageIcon = new ImageIcon(img.getPath());
+            }
+            return imageIcon;
+        }
+    }
+    
+    public static interface ImageIconSupplier {
+        ImageIcon getImageIcon();
+    }
+    private static File makeThumbs(ImageIconSupplier imgSupplier, File thumbimg, int height) {
+        //BufferedImage frame = FrameGrab.getFrame(new File("/Users/jovi/Movies/test.mp4"), i);
+        File ret = null;
+        if (!thumbimg.exists()) {
+            File thumbdir = thumbimg.getParentFile();
+            if (!thumbdir.exists()) {
+                thumbdir.mkdirs();
+            }
+            
+            System.err.println("generate thumb>>>" + thumbimg);
+            try {
+                ImageIcon ii = ImageUtil.getScaledImageIconHeight(imgSupplier.getImageIcon(), height, false);
+                ImageIO.write(ImageUtil.getBufferedImage(ii), "png", thumbimg);
+                ret = thumbimg;
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        } else {
+            ret = thumbimg;
+        }
+        return ret;
+    }
+    private String getImgHref(File root, File img, HashMap<String, Integer> imgFilesMap, JSONArray imgFiles) {
 		Template templ = ve.getTemplate("imgTempl.html");
 		StringWriter writer = new StringWriter();
 		VelocityContext context = new VelocityContext();
@@ -346,43 +437,19 @@ public class WWWGenerator {
 		context.put("hrefidx", imgFilesMap.get(img.getName()));
 		
         context.put("useThumb", useThumb);
+        try {
+            String imgComment = imgFiles.getJSONObject(imgFilesMap.get(img.getName())).getString("comment");
+            context.put("imgComment", imgComment);
+        } catch (Exception e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         if (useThumb) {
-            File thumbdir = new File(img.getParentFile(), ".thumb");
-            File thumbdirBig = new File(img.getParentFile(), ".thumbg");
-            if (!thumbdir.exists()) {
-                thumbdir.mkdirs();
-            }
-            if (!thumbdirBig.exists()) {
-                thumbdirBig.mkdirs();
-            }
-            File thumbimg = new File(thumbdir, img.getName() + ".png");
-            try {
-                String imgComment = imgFiles.getJSONObject(imgFilesMap.get(img.getName())).getString("comment");
-                context.put("imgComment", imgComment);
-            } catch (Exception e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-            if (!thumbimg.exists()) {
-                System.err.println("generate thumb>>>" + thumbimg);
-                ImageIcon origimg = new ImageIcon(img.getPath());
-                // 1920 х 1080 2560 х 1440
-                ImageIcon ii;
-                ii = ImageUtil.getScaledImageIconHeight(origimg, 160, false);
-                try {
-                    ImageIO.write(ImageUtil.getBufferedImage(ii), "png", thumbimg);
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                ii = ImageUtil.getScaledImageIconHeight(origimg, 1080, false);
-                try {
-                    ImageIO.write(ImageUtil.getBufferedImage(ii), "png", new File(thumbdirBig, img.getName() + ".png"));
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            }
+            FileImageIconSupplier imgsupl = new FileImageIconSupplier(img);
+            File thumbimg = new File(new File(img.getParentFile(), ".thumb"), img.getName() + ".png");
+            makeThumbs(imgsupl, thumbimg, 160);
+            File thumbimgBig = new File(new File(img.getParentFile(), ".thumbg"), img.getName() + ".png");
+            makeThumbs(imgsupl, thumbimgBig, 736);
             context.put("hrefthumb", FileUtil.getRelativePath(root, thumbimg));
         } else {
             context.put("hrefthumb", FileUtil.getRelativePath(root, img));
@@ -507,7 +574,9 @@ public class WWWGenerator {
 		context.put("title", m.getAnyTitle());
 		if (prevpath != null) {
 			context.put("href", path + "index.html");
-		}
+		} else {
+			context.put("hrefcur", path);
+        }
 		
 		template.merge(context, writer);
 		
