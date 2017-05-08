@@ -618,7 +618,7 @@ public class WWWGenerator {
 		
 		context.put("pageContent", content.content.toString());
 		context.put("breadcrumbs", makeBreadcrumbs(content.root, null));
-		context.put("title", content.root.getAnyTitle());
+		context.put("title", content.root.getFullTitle());
 		
 		context.put("cssName", FileUtil.getRelativePath(content.file, cssFile));
 		

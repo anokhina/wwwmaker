@@ -37,6 +37,22 @@ public class Menu {
 		this.iconPath = iconPath;
 		return this;
 	}
+	public String getFullTitle() {
+        ArrayList<Menu> mpath = new ArrayList<>();
+        Menu r = getRootPath(this, mpath);
+        StringBuilder sb = new StringBuilder();
+        if (mpath.size() > 1) {
+            sb.append(r.getAnyTitle());
+            sb.append(" ");
+            if (mpath.size() > 2) {
+                Menu m = mpath.get(mpath.size() - 2);
+                sb.append(m.getAnyTitle());
+                sb.append(" ");
+            }
+        }
+        sb.append(this.getAnyTitle());
+        return sb.toString();
+    }
 	public String getAnyTitle() {
 		if(title == null) {
 			return getId();
@@ -77,6 +93,14 @@ public class Menu {
 			return m;
 		}
 		return getRoot(m.getParent());
+	}
+	public static Menu getRootPath(Menu m, List<Menu> menus) {
+		if(m == null) return null;
+        menus.add(m);
+		if (m.getParent() == null) {
+			return m;
+		}
+		return getRootPath(m.getParent(), menus);
 	}
 	public void delMenu(Menu m) {
 		if (m.getParent() != null && m.getParent() == this) {
